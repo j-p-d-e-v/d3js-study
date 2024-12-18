@@ -1,3 +1,9 @@
+# D3JS Study
+
+References:
+
+- https://www.youtube.com/watch?v=DcMX8JiX80Y&t=10s
+
 # Exercises
 
 - Get datasets from Kaggle.com
