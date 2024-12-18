@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Animation</title>
+  </head>
+  <body>
+    <div id="canvas"></div>
+
+    <script type="module">
+      import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+      let width = 600;
+      let height = 150;
+      let margin = {
+        top: 25,
+        bottom: 35,
+        left: 40,
+        right: 20,
+      };
+
+      let alphabet = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+      let events = ["enter", "update", "exit"];
+
+      function random_alphabet() {
+        return d3
+          .shuffle(alphabet)
+          .slice(Math.floor(Math.random() + 10) + 5)
+          .sort(d3.ascending);
+      }
+
+      function render_svg(svg, x, y, g) {
+        let data = random_alphabet();
+
+        g.selectAll(".letter")
+          .data(data, (d) => d)
+          .join(
+            (enter) =>
+              enter
+                .append("text")
+                .attr("class", "letter")
+                .attr("y", y("enter") + 5)
+                .attr("x", (d) => x(d))
+                .attr("font", "14px arial")
+                .style("fill", "green")
+                .text((d) => d),
+            (update) =>
+              update
+                .style("fill", "red")
+                .call((update) =>
+                  update.transition().attr("y", y("update") + 5),
+                ),
+            (exit) =>
+              exit.style("fill", "blue").call((exit) =>
+                exit
+                  .transition()
+                  .attr("y", y("exit") + 5)
+                  .transition()
+                  .duration(2000)
+                  .remove(),
+              ),
+          );
+
+        /**
+        let text_selection = g.selectAll(".letter").data(data, (d) => d);
+
+        text_selection
+          .enter()
+          .append("text")
+          .attr("class", "letter")
+          .attr("y", y("enter") + 5)
+          .attr("x", (d) => x(d))
+          .attr("font", "14px arial")
+          .style("fill", "green")
+          .text((d) => d);
+
+        text_selection
+          .transition()
+          .duration(1000)
+          .attr("y", y("update") + 5)
+          .style("fill", "red");
+        text_selection
+          .exit()
+          .transition()
+          .duration(1000)
+          .attr("y", y("exit") + 5)
+          .style("fill", "blue")
+          .transition()
+          .duration(1000)
+          .style("opacity", 0)
+          .remove();
+        */
+        let dom = document.getElementById("canvas");
+        dom.innerHTML = "";
+        dom.append(svg.node());
+      }
+      let svg = d3
+        .create("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.bottom + margin.top);
+
+      let g = svg
+        .append("a")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      let y = d3.scalePoint().domain(events).range([0, height]);
+
+      let x = d3.scalePoint().domain(alphabet).range([10, width]);
+
+      g.append("g").call(d3.axisLeft(y));
+
+      render_svg(svg, x, y, g);
+      setInterval(() => {
+        render_svg(svg, x, y, g);
+      }, 3000);
+    </script>
+  </body>
+</html>

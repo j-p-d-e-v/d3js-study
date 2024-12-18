@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+    <style>
+      .tooltip {
+        padding: 10px;
+        position: absolute;
+        pointer-events: none;
+        background-color: #000;
+        min-height: 100px;
+        min-width: 300px;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="buttons"></div>
+    <div id="canvas"></div>
+    <script type="text/javascript" src="scatterplot-data-1.js"></script>
+    <script type="module">
+      import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+      let width = 900;
+      let height = 450;
+      let margin = {
+        top: 25,
+        bottom: 35,
+        left: 40,
+        right: 20,
+      };
+      let species = d3.groups(data1, (d) => d.species);
+      let svg = d3
+        .create("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
+
+      let x = d3
+        .scaleLinear()
+        .domain(d3.extent(data1.map((d) => d.sepalLength)))
+        .range([0, width]);
+
+      let y = d3
+        .scaleLinear()
+        .domain(d3.extent(data1.map((d) => d.sepalWidth)))
+        .range([height, 0]);
+
+      let color = d3.scaleOrdinal().domain(species).range(d3.schemeDark2);
+
+      const buttons = d3
+        .select("#buttons")
+        .selectAll("button")
+        .data(species)
+        .join("button")
+        .text((d) => d[0]);
+      let g = svg
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      g.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x).ticks(width / 80));
+      g.append("g").call(d3.axisLeft(y));
+
+      let tooltip = d3
+        .select("body")
+        .append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+      function render_circle(svg, g, data) {
+        g.selectAll("circle")
+
+          .data(data, (d) => d)
+          .join(
+            (enter) =>
+              enter
+                .append("circle")
+                .attr("cx", (d) => x(d.sepalLength))
+                .attr("cy", (d) => y(d.sepalWidth))
+                .attr("r", 6)
+                .style("fill", (d) => color(d.species)),
+            (update) =>
+              update
+                .attr("cx", (d) => x(d.sepalLength))
+                .attr("cy", (d) => y(d.sepalWidth))
+                .style("fill", (d) => color(d.species)),
+            (exit) =>
+              exit.call((exit) => {
+                exit.transition().duration(1000).attr("r", 0).remove();
+              }),
+          )
+          .on("click", (event, d) => {
+            console.log("clicked", d);
+          })
+          .on("mouseover", (event, d) => {
+            console.log(d, event);
+            tooltip
+              .style("opacity", 1)
+              .html(JSON.stringify(d))
+              .style("left", event.pageX + "px")
+              .style("top", event.pageY + "px");
+          })
+          .on("mouseout", () => {
+            tooltip.transition().duration(1000).style("opacity", 0);
+          });
+      }
+      function render_svg(svg) {
+        let html = document.getElementById("canvas");
+        html.innerHTML = "";
+        html.append(svg.node());
+      }
+      render_circle(svg, g, species[0][1]);
+
+      render_svg(svg);
+
+      buttons.on("click", (even, d) => {
+        render_circle(svg, g, d[1]);
+      });
+    </script>
+  </body>
+</html>

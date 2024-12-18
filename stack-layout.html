@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stack Layout</title>
+    <script type="text/javascript" src="us-population.js"></script>
+    <script type="text/javascript" src="ages.js"></script>
+
+    <style>
+      body {
+        padding: 0px;
+      }
+      #canvas svg {
+        border: 1px solid #cecece;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="canvas"></div>
+
+    <script type="module">
+      import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+      let width = 1200;
+      let height = 500;
+      let margin = {
+        top: 25,
+        bottom: 35,
+        left: 40,
+        right: 20,
+      };
+
+      let svg = d3
+        .create("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
+      let g = svg
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      let us_states = Array.from(
+        new Set(us_population_data.map((d) => d.name)),
+      );
+
+      let x = d3.scaleBand().domain(us_states).range([0, width]).padding(0.1);
+      let stack = d3
+        .stack()
+        .keys(ages_labels)
+        .value((d, key) => d[key]);
+      let series = stack(us_population_data);
+
+      let population_counts = [];
+      for (let i in series) {
+        population_counts = population_counts.concat(
+          Array.from(new Set(series[i].map((d) => d[0]))),
+          Array.from(new Set(series[i].map((d) => d[1]))),
+        );
+      }
+      let y = d3
+        .scaleLinear()
+        .domain(d3.extent(population_counts))
+        .nice()
+        .range([height, 0]);
+
+      let color = d3
+        .scaleOrdinal()
+        .domain(ages_labels)
+        .range(d3.schemeSpectral[ages_labels.length])
+        .unknown("#cecece");
+
+      g.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x));
+      g.append("g").call(d3.axisLeft(y).ticks(null, "s"));
+
+      svg
+        .append("g")
+        .selectAll("g")
+        .data(series)
+        .join("g")
+        .attr("fill", (d) => color(d.key))
+        .selectAll("rect")
+        .data((d) => d)
+        .join("rect")
+        .attr("x", (d) => x(d.data["name"]) + margin.left)
+        .attr("y", (d) => y(d[1]))
+        .attr("width", x.bandwidth())
+        .attr("height", (d) => y(d[0]) - y(d[1]));
+
+      let node = svg.node();
+      document.getElementById("canvas").append(node);
+    </script>
+  </body>
+</html>

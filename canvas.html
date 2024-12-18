@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scatter Plot</title>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+      div {
+        font-size: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="canvas"></div>
+    <script type="text/javascript" src="scatterplot-data-1.js"></script>
+    <script type="module">
+      import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+      let html = document.getElementById("canvas");
+      const width = 600;
+      const height = 400;
+      const margin = {
+        top: 20,
+        bottom: 20,
+        left: 20,
+        right: 20,
+      };
+      const svg = d3
+        .create("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .style("border", "1px dashed #000");
+      const g = svg
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      g.append("rect").attr("width", width).attr("height", height);
+      window.svg = svg;
+      html.append(svg.node());
+    </script>
+  </body>
+</html>

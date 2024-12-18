@@ -1,0 +1,10 @@
+services:
+  d3js:
+    image: nginx
+    volumes:
+      - ./:/usr/share/nginx/html:ro
+    working_dir: /usr/share/nginx/html
+    ports:
+      - 7080:80
+      - 7081:81
+    tty: true

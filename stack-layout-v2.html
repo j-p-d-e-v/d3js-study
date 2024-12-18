@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stack Layout V2</title>
+    <script type="text/javascript" src="us-population.js"></script>
+    <script type="text/javascript" src="ages.js"></script>
+  </head>
+  <body>
+    <div id="canvas"></div>
+
+    <script type="module">
+      import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+      let width = 1200;
+      let height = 500;
+      let margin = {
+        top: 25,
+        bottom: 35,
+        left: 40,
+        right: 20,
+      };
+
+      let svg = d3
+        .create("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
+
+      let stack = d3.stack().keys(ages_labels);
+      let series = stack.offset(d3.stackOffsetExpand)(us_population_data);
+      let states = us_population_data.map((d) => d.name);
+      let g = svg
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      let y = d3
+        .scaleLinear()
+        .domain([0, d3.max(series, (d) => d3.max(d, (d) => d[1]))])
+        .nice()
+        .range([height, 0]);
+
+      let color = d3
+        .scaleOrdinal()
+        .domain(ages_labels)
+        .range(d3.schemeSpectral[ages_labels.length]);
+
+      let x = d3.scaleBand().domain(states).range([0, width]);
+
+      g.append("g")
+        .selectAll(".bucket")
+        .data(series)
+        .join("g")
+        .attr("class", "bucket")
+        .attr("fill", (_, i) => color(ages_labels[i]))
+        .selectAll("rect")
+        .data((d) => d)
+        .join("rect")
+        .attr("x", (d) => x(d.data.name))
+        .attr("y", (d) => y(d[1]))
+        .attr("height", (d) => y(d[0]) - y(d[1]))
+        .attr("width", x.bandwidth());
+      g.append("g").call(d3.axisLeft(y));
+      g.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x));
+      document.getElementById("canvas").append(svg.node());
+    </script>
+  </body>
+</html>

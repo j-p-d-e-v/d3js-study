@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scatter Plot</title>
+    <style>
+      div {
+        font-size: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Linear Scale</h3>
+    <div id="d3ScaleLinear"></div>
+    <h3>Ordinal Scale</h3>
+    <div id="d3OrdinalScale"></div>
+    <script type="text/javascript" src="scatterplot-data-1.js"></script>
+    <script type="module">
+      import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+      /**
+      Checklist
+      - Cicles - data 
+      - Axes - data
+      - Labels
+      - Containers / Canvas
+      - Text - data
+      - Data of x and y values
+      - Scales - ??
+      - Color / Styling
+      **/
+
+      // Scales - abstract of dimension of data
+      // domain([1,100]) - data
+      // range([5,25]) - pixels
+      let html = document.getElementById("d3ScaleLinear");
+      let myLinearScale = d3.scaleLinear().domain([0, 1]).range([0, 100])(5);
+      let myValues = data1.map((d) => d.sepalLength);
+      html.innerText = [d3.min(myValues), d3.max(myValues)].join(" / ");
+      myLinearScale = d3
+        .scaleLinear()
+        .domain([d3.min(myValues), d3.max(myValues)])
+        .range([0, 1])(5);
+      html.append("\n\nLong " + myLinearScale);
+      //Using other version which is way shorter
+      myLinearScale = d3
+        .scaleLinear()
+        .domain(d3.extent(data1, (d) => d.sepalLength))
+        .range([0, 1])(5);
+      html.append("\nExtent" + myLinearScale);
+
+      // d3OrdinalScale
+      let d3OrdinalScale = document.getElementById("d3OrdinalScale");
+      let myOrdinalScale = d3
+        .scaleOrdinal()
+        .domain(["apple", "orange", "banana"])
+        .range(["red", "orange", "yellow"]);
+      d3OrdinalScale.innerHTML = `<div style='background-color: ${myOrdinalScale("banana")}'>${myOrdinalScale("banana")}</div>`;
+      let speciesData = new Set(data1.map((d) => d.species));
+      console.log(speciesData.values().toArray());
+      d3OrdinalScale.append(speciesData.values().toArray().join(" / "));
+      myOrdinalScale = d3
+        .scaleOrdinal()
+        .domain(speciesData.values().toArray())
+        .range(["red", "orange", "yellow"]);
+      d3OrdinalScale.innerHTML = `<div style='background-color: ${myOrdinalScale("versicolor")}'>${myOrdinalScale("versicolor")}</div>`;
+    </script>
+  </body>
+</html>
